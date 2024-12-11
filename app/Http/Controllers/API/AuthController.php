@@ -12,6 +12,7 @@ class AuthController extends Controller
 {
     public function signup(Request $request)
     {
+        // Validate the input data to ensure the required fields are present and correct
         $validator = Validator::make($request->all(), [
             "name" => "required",
             "email" => "required|email",
@@ -20,7 +21,6 @@ class AuthController extends Controller
         ]);
         if ($validator->fails()) {
             return response()->json([
-
                 "status" => false,
                 "message" => "Validation Error",
                 "errors" => $validator->errors()->all()
@@ -54,8 +54,10 @@ class AuthController extends Controller
             "email" => $request->email,
             "password" => $request->password
         ])) {
+            // If authentication is successful, get the authenticated user
             $user = Auth::user();
 
+            // Prepare a response with the user's token and details
             $response = [];
             $response['token'] = $user->createToken("MyApp")->accessToken;
             $response['user'] = $user->name;
@@ -71,6 +73,20 @@ class AuthController extends Controller
             "status" => false,
             "message" => "User not registered",
             "data" => null
+        ]);
+    }
+    public function logout(Request $request)
+    {
+        $user = Auth::user();
+
+        $user->tokens->each(function ($token) {
+            $token->delete();
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'User logged out',
+            'data' => null
         ]);
     }
 }
